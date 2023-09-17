@@ -8,16 +8,17 @@ ports:
       onOpen: ignore
       visibility: public
 tasks:
-  - init: >
-      (cp -n .env.example .env || true) && 
-      pipenv install &&
-      psql -U gitpod -c 'CREATE DATABASE example;' &&
-      psql -U gitpod -c 'CREATE EXTENSION unaccent;' -d example &&
-      psql -c "ALTER USER gitpod PASSWORD 'postgres';" &&
-      bash database.sh &&
-      python docs/assets/welcome.py
-    command: >
+    - init: |
+        cp .env.example .env &&
+        pipenv install  &&
+        mysql -u root -e "CREATE DATABASE example" &&
+        pipenv run init &&
+        pipenv run migrate &&
+        pipenv run upgrade;
+      command: >
         pipenv run start;
+    - command: python3 welcome.py
+      openMode: split-right
 
 github:
   prebuilds:
